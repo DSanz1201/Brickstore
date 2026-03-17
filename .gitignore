@@ -3,3 +3,4 @@
 .cproject
 *.exe
 *.o
+/Debug/
