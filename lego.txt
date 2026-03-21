@@ -1,0 +1,10 @@
+1;LEGO Star Wars Millennium Falcon;5;159.99
+2;LEGO Harry Potter Hogwarts Castle;3;129.99
+3;LEGO Technic Bugatti Chiron;2;349.99
+4;LEGO City Police Station;10;89.99
+5;LEGO Marvel Avengers Tower;4;199.99
+6;LEGO Star Wars The Skywalker Saga PS5;8;59.99
+7;LEGO Harry Potter Collection Switch;6;39.99
+8;LEGO Marvel Super Heroes 2 PC;7;29.99
+9;LEGO Jurassic World Xbox;5;24.99
+10;LEGO Batman 3 Beyond Gotham PS4;9;19.99
