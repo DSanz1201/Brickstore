@@ -15,7 +15,7 @@
 #include "usuario.h"
 #include "pedido.h"
 #include "lineaPedido.h"
-
+#include "valoracion.h"
 
 void inicializarDB(sqlite3 *db){
     char *sql1 =
@@ -66,6 +66,19 @@ void inicializarDB(sqlite3 *db){
     if(sqlite3_exec(db, sql4, 0, 0, 0) != SQLITE_OK){
         printf("Error creando tabla linea_pedido\n");
 
+    }
+    char *sql5 =
+        "CREATE TABLE IF NOT EXISTS valoracion ("
+        "id INTEGER PRIMARY KEY,"
+        "id_usuario INTEGER,"
+        "id_producto INTEGER,"
+        "puntuacion INTEGER,"
+        "comentario TEXT,"
+        "FOREIGN KEY (id_usuario) REFERENCES usuario(id),"
+        "FOREIGN KEY (id_producto) REFERENCES producto(id));";
+
+    if(sqlite3_exec(db, sql5, 0, 0, 0) != SQLITE_OK){
+        printf("Error creando tabla valoracion\n");
     }
 }
 
@@ -126,9 +139,9 @@ int main(void) {
         return 1;
     }
 // ya han sido creados
-//    inicializarDB(db);
-//    crearFicheroProductos("lego.txt");
-//    inicializarFichero("lego.txt", db);
+    inicializarDB(db);
+    crearFicheroProductos("lego.txt");
+    inicializarFichero("lego.txt", db);
 
     sqlite3_close(db);
     return 0;
