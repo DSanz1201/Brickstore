@@ -18,5 +18,7 @@ typedef struct{
     int admin;  // 1 si es admin / 0 si es usuario normal
 } Usuario;
 
+// Función para validar credenciales
+int loginUsuario(sqlite3 *db, char* email, char* password, Usuario *u);
 
 #endif /* USUARIO_H_ */

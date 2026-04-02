@@ -15,9 +15,9 @@ typedef struct{
 }Producto;
 
 void insertarProducto(sqlite3 *db, Producto p); // solo al inicio
-//void añadirProducto(Producto p);
-//void listarProductos();
-//void modificarProducto(Producto *p);
-//void borrarProducto(Producto p);
+void anyadirProducto(sqlite3 *db);
+void listarProductos(sqlite3 *db);
+void modificarProducto(sqlite3 *db);
+void eliminarProducto(sqlite3 *db);
 
 #endif /* PRODUCTO_H_ */

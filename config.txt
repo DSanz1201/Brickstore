@@ -1,0 +1,3 @@
+DB_PATH=tienda.db
+ADMIN_USER=admin@brickstore.com
+LOG_PATH=server.log
