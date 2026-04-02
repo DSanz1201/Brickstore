@@ -122,8 +122,6 @@ void crearFicheroProductos(char *nombreFichero){
 
         fclose(f);
 
-        printf("Fichero creado correctamente\n");
-
     } else {
         printf("Error creando fichero\n");
     }

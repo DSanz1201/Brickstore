@@ -48,9 +48,9 @@ void listarProductos(sqlite3 *db) {
 	        return;
 	    }
 
-	    printf("\n--- CATALOGO DE PRODUCTOS ---\n");
-	    printf("%-5s %-30s %-10s %-10s\n", "ID", "Nombre", "Stock", "Precio");
-	    printf("------------------------------------------------------------\n");
+	    printf("\n====================================================================\n");
+	    printf("%-5s | %-35s | %-8s | %-10s\n", "ID", "Nombre del Producto", "Stock", "Precio");
+	    printf("--------------------------------------------------------------------\n");
 
 	    while (sqlite3_step(stmt) == SQLITE_ROW) {
 	        int id = sqlite3_column_int(stmt, 0);
@@ -58,8 +58,9 @@ void listarProductos(sqlite3 *db) {
 	        int stock = sqlite3_column_int(stmt, 2);
 	        double precio = sqlite3_column_double(stmt, 3);
 
-	        printf("%-5d %-30s %-10d %-10.2f\n", id, nombre, stock, precio);
+	        printf("%-5d | %-35.35s | %-8d | %-8.2f EUR\n", id, nombre, stock, precio);
 	    }
+	    printf("====================================================================\n");
 
 	    sqlite3_finalize(stmt);
 }

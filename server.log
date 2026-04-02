@@ -1,0 +1,17 @@
+[2026-04-02 17:43:09] LOGIN OK - Administrador conectado
+[2026-04-02 17:43:15] LISTAR - El administrador ha consultado el catálogo completo de productos.
+[2026-04-02 17:43:45] INSERTAR - Se ha dado de alta un nuevo producto en la base de datos.
+[2026-04-02 17:43:47] LISTAR - El administrador ha consultado el catálogo completo de productos.
+[2026-04-02 17:44:03] MODIFICAR - Se han actualizado los datos (stock/precio) de un producto existente.
+[2026-04-02 17:44:05] LISTAR - El administrador ha consultado el catálogo completo de productos.
+[2026-04-02 17:46:43] LISTAR - El administrador ha consultado el catálogo completo de productos.
+[2026-04-02 17:47:20] LOGIN OK - Administrador conectado
+[2026-04-02 17:47:24] LISTAR - El administrador ha consultado el catálogo completo de productos.
+[2026-04-02 17:47:47] INSERTAR - Se ha dado de alta un nuevo producto en la base de datos.
+[2026-04-02 17:47:49] LISTAR - El administrador ha consultado el catálogo completo de productos.
+[2026-04-02 19:04:01] LOGIN OK - Administrador conectado
+[2026-04-02 19:04:07] LISTAR - El administrador ha consultado el catálogo completo de productos.
+[2026-04-02 19:04:29] ELIMINAR - Se ha borrado un producto del catálogo de la tienda.
+[2026-04-02 19:04:31] LISTAR - El administrador ha consultado el catálogo completo de productos.
+[2026-04-02 19:04:42] ELIMINAR - Se ha borrado un producto del catálogo de la tienda.
+[2026-04-02 19:04:44] LISTAR - El administrador ha consultado el catálogo completo de productos.
