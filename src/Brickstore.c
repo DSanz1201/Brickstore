@@ -101,32 +101,6 @@ void inicializarFichero(char* nombreFichero, sqlite3 *db){
         printf("Error abriendo fichero\n");
     }
 }
-
-void crearFicheroProductos(char *nombreFichero){
-    FILE *f;
-
-    f = fopen(nombreFichero, "w");
-
-    if(f != NULL){
-    	// LOST FPRINTF HAS SIDO GENERADOS CON IA GENERATIVA (CHAT GPT)
-        fprintf(f, "1;LEGO Star Wars Millennium Falcon;5;159.99\n");
-        fprintf(f, "2;LEGO Harry Potter Hogwarts Castle;3;129.99\n");
-        fprintf(f, "3;LEGO Technic Bugatti Chiron;2;349.99\n");
-        fprintf(f, "4;LEGO City Police Station;10;89.99\n");
-        fprintf(f, "5;LEGO Marvel Avengers Tower;4;199.99\n");
-        fprintf(f, "6;LEGO Star Wars The Skywalker Saga PS5;8;59.99\n");
-        fprintf(f, "7;LEGO Harry Potter Collection Switch;6;39.99\n");
-        fprintf(f, "8;LEGO Marvel Super Heroes 2 PC;7;29.99\n");
-        fprintf(f, "9;LEGO Jurassic World Xbox;5;24.99\n");
-        fprintf(f, "10;LEGO Batman 3 Beyond Gotham PS4;9;19.99\n");
-
-        fclose(f);
-
-    } else {
-        printf("Error creando fichero\n");
-    }
-}
-
 void obtenerConfiguracion(char* clave, char* valor) {
     FILE *f = fopen("config.txt", "r");
     char linea[100];
@@ -173,7 +147,6 @@ int main(void) {
 
 // ya han sido creados
 //    inicializarDB(db);
-//    crearFicheroProductos("lego.txt");
 //    inicializarFichero("lego.txt", db);
 
     printf("=== BRICKSTORE: ACCESO ADMINISTRADOR ===\n");

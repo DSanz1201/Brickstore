@@ -15,3 +15,12 @@
 [2026-04-02 19:04:31] LISTAR - El administrador ha consultado el catálogo completo de productos.
 [2026-04-02 19:04:42] ELIMINAR - Se ha borrado un producto del catálogo de la tienda.
 [2026-04-02 19:04:44] LISTAR - El administrador ha consultado el catálogo completo de productos.
+[2026-04-02 19:27:49] LOGIN OK - Administrador conectado
+[2026-04-02 19:28:24] INSERTAR - Se ha dado de alta un nuevo producto en la base de datos.
+[2026-04-02 19:32:22] LISTAR - El administrador ha consultado el catálogo completo de productos.
+[2026-04-02 19:32:48] LOGOUT - El administrador ha cerrado la sesión y la herramienta de gestión.
+[2026-04-02 19:50:14] LOGIN OK - Administrador conectado
+[2026-04-02 19:50:19] LOGOUT - El administrador ha cerrado la sesión y la herramienta de gestión.
+[2026-04-02 19:50:46] LOGIN OK - Administrador conectado
+[2026-04-02 19:50:49] LISTAR - El administrador ha consultado el catálogo completo de productos.
+[2026-04-02 19:51:04] LOGOUT - El administrador ha cerrado la sesión y la herramienta de gestión.

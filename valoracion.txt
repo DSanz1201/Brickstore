@@ -1,0 +1,10 @@
+1;101;1;5;Set increible de Star Wars, muy detallado
+2;102;2;4;Buen set de arquitectura, aunque caro
+3;103;3;5;Me encanta este coche de Technic, muy realista
+4;104;2;3;Esperaba mas piezas por el precio
+5;105;5;4;Perfecto para niños, muy divertido
+6;106;4;5;El barco es espectacular, muy recomendable
+7;107;3;4;Montaje entretenido pero algo complejo
+8;108;1;5;Uno de los mejores sets que he comprado
+9;109;5;3;Esta bien pero algo simple
+10;110;4;5;Gran calidad, muy buena experiencia de montaje

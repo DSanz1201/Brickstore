@@ -8,3 +8,13 @@
 8;LEGO Marvel Super Heroes 2 PC;7;29.99
 9;LEGO Jurassic World Xbox;5;24.99
 10;LEGO Batman 3 Beyond Gotham PS4;9;19.99
+11;LEGO Creator Expert Taj Mahal;2;399.99
+12;LEGO Technic Lamborghini Sian;3;449.99
+13;LEGO Star Wars Death Star;1;499.99
+14;LEGO Architecture Eiffel Tower;4;79.99
+15;LEGO Ideas NASA Apollo Saturn V;6;119.99
+16;LEGO Creator Pirate Ship;7;99.99
+17;LEGO City Fire Station;8;69.99
+18;LEGO Ninjago City Gardens;2;299.99
+19;LEGO Disney Castle;3;349.99
+20;LEGO Technic Crane;5;149.99
