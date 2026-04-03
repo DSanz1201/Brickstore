@@ -1,0 +1,5 @@
+1;admin;admin@brickstore.com;1234;1
+102;lucia;lucia@gmail.com;abcd;0
+103;mario;mario@gmail.com;pass123;0
+104;ana;ana@gmail.com;qwerty;0
+5;pedro;pedro@gmail.com;12345;1

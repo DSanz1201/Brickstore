@@ -162,7 +162,9 @@ int main(void) {
 // ya han sido creados
     inicializarDB(db);
     inicializarFichero("lego.txt", db);
+    inicializarFicheroUsuarios("usuario.txt", db);
     cargarValoracionesFichero("valoracion.txt", db);
+
 
     printf("=== BRICKSTORE: ACCESO ADMINISTRADOR ===\n");
     while(!logueado) {

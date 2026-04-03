@@ -37,17 +37,18 @@ void listarValoraciones(sqlite3 *db) {
         printf("Error al consultar valoraciones.\n");
         return;
     }
-
     printf("\n--- VALORACIONES DE CLIENTES ---\n");
-    printf("%-15s | %-15s | %-5s | %-20s\n", "Usuario", "Producto", "Nota", "Comentario");
-    printf("----------------------------------------------------------------------\n");
+      printf("%-15s | %-35s | %-5s | %-40s\n",
+             "Usuario", "Producto", "Nota", "Comentario");
+      printf("-----------------------------------------------------------------------------------------------\n");
 
-    while (sqlite3_step(stmt) == SQLITE_ROW) {
-        printf("%-15s | %-15s | %-5d | %s\n",
-               sqlite3_column_text(stmt, 2),
-               sqlite3_column_text(stmt, 3),
-               sqlite3_column_int(stmt, 0),
-               sqlite3_column_text(stmt, 1));
-    }
-    sqlite3_finalize(stmt);
+      while (sqlite3_step(stmt) == SQLITE_ROW) {
+          printf("%-15s | %-35s | %-5d | %-40s\n",
+                 sqlite3_column_text(stmt, 2),
+                 sqlite3_column_text(stmt, 3),
+                 sqlite3_column_int(stmt, 0),
+                 sqlite3_column_text(stmt, 1));
+      }
+
+      sqlite3_finalize(stmt);
 }
