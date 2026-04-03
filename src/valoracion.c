@@ -15,7 +15,7 @@ void InsertarValoracion(sqlite3 *db,Valoracion v){
 	char sql[500];
 
 	    sprintf(sql,
-	        "INSERT INTO valoracion (id, id_usuario, id_producto, puntuacion, comentario) "
+	        "INSERT OR IGNORE INTO valoracion (id, id_usuario, id_producto, puntuacion, comentario) "
 	        "VALUES (%d, %d, %d, %d, '%s');",
 	        v.id, v.id_usuario, v.id_producto, v.puntuacion, v.comentario);
 
@@ -30,8 +30,8 @@ void listarValoraciones(sqlite3 *db) {
     // Consulta con JOIN para ver nombres en lugar de solo IDs
     char *sql = "SELECT v.puntuacion, v.comentario, u.nombre, p.nombre "
                 "FROM valoracion v "
-                "JOIN usuario u ON v.id_usuario = u.id "
-                "JOIN producto p ON v.id_producto = p.id;";
+                "LEFT JOIN usuario u ON v.id_usuario = u.id "
+                "LEFT JOIN producto p ON v.id_producto = p.id;";
 
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
         printf("Error al consultar valoraciones.\n");

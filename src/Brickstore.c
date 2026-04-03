@@ -134,7 +134,7 @@ void cargarValoracionesFichero(char* nombreFichero, sqlite3 *db) {
     if (f != NULL) {
         Valoracion v;
         // El formato es: id;id_usuario;id_producto;puntuacion;comentario
-        while (fscanf(f, " %d;%d;%d;%d;%199[^ \n\r]", &v.id, &v.id_usuario, &v.id_producto, &v.puntuacion, v.comentario) == 5) {
+        while (fscanf(f, " %d;%d;%d;%d;%199[^\n\r]", &v.id, &v.id_usuario, &v.id_producto, &v.puntuacion, v.comentario) == 5) {
             InsertarValoracion(db, v);
         }
         fclose(f);
