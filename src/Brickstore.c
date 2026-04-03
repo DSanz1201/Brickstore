@@ -82,7 +82,7 @@ void inicializarDB(sqlite3 *db){
         printf("Error creando tabla valoracion\n");
     }
 
-    sqlite3_exec(db, "INSERT OR IGNORE INTO usuario (nombre, email, password, admin) VALUES ('Admin', 'admin@brickstore.com', '1234', 1);", 0, 0, 0);
+    sqlite3_exec(db, "INSERT OR IGNORE INTO usuario (nombre, email, password, admin) VALUES ('Admin', 'admin', '1234', 1);", 0, 0, 0);
 }
 
 // Leer fichero y cargar datos
@@ -129,6 +129,20 @@ void escribirLog(char* mensaje) {
     }
 }
 
+void cargarValoracionesFichero(char* nombreFichero, sqlite3 *db) {
+    FILE *f = fopen(nombreFichero, "r");
+    if (f != NULL) {
+        Valoracion v;
+        // El formato es: id;id_usuario;id_producto;puntuacion;comentario
+        while (fscanf(f, " %d;%d;%d;%d;%199[^ \n\r]", &v.id, &v.id_usuario, &v.id_producto, &v.puntuacion, v.comentario) == 5) {
+            InsertarValoracion(db, v);
+        }
+        fclose(f);
+    } else {
+        printf("Error abriendo fichero de valoraciones\n");
+    }
+}
+
 
 int main(void) {
 	setbuf(stdout, NULL);
@@ -146,8 +160,9 @@ int main(void) {
     }
 
 // ya han sido creados
-//    inicializarDB(db);
-//    inicializarFichero("lego.txt", db);
+    inicializarDB(db);
+    inicializarFichero("lego.txt", db);
+    cargarValoracionesFichero("valoracion.txt", db);
 
     printf("=== BRICKSTORE: ACCESO ADMINISTRADOR ===\n");
     while(!logueado) {
@@ -171,13 +186,15 @@ int main(void) {
     }
 
     int opcion = 0;
-        while(opcion != 5) {
+        while(opcion != 7) {
             printf("\n--- MENU DE ADMINISTRACION ---\n");
             printf("1. Visualizar catalogo de productos\n");
             printf("2. Añadir nuevo producto\n");
             printf("3. Modificar producto (Stock/Precio)\n");
             printf("4. Eliminar producto\n");
-            printf("5. Salir\n");
+            printf("5. Ver valoraciones de clientes\n");
+            printf("6. Registrar nuevo administrador\n");
+            printf("7. Salir\n");
             printf("Seleccione una opcion: ");
             fflush(stdout);
             scanf("%d", &opcion);
@@ -200,6 +217,14 @@ int main(void) {
                     escribirLog("ELIMINAR - Se ha borrado un producto del catálogo de la tienda.");
                     break;
                 case 5:
+                    listarValoraciones(db);
+                    escribirLog("VALORACIONES - El administrador ha consultado las reseñas.");
+                    break;
+                case 6:
+                    registrarAdmin(db);
+                    escribirLog("NUEVO_ADMIN - Se ha creado una nueva cuenta de administrador.");
+                    break;
+                case 7:
                     printf("Cerrando sesion y saliendo...\n");
                     escribirLog("LOGOUT - El administrador ha cerrado la sesión y la herramienta de gestión.");
                     break;

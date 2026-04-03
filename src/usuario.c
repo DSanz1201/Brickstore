@@ -42,3 +42,25 @@ int loginUsuario(sqlite3 *db, char* email, char* password, Usuario *u) {
     sqlite3_finalize(stmt);
     return result;
 }
+
+void registrarAdmin(sqlite3 *db) {
+    char nombre[50], email[80], password[30];
+    char sql[300];
+
+    printf("\n--- REGISTRAR NUEVO ADMINISTRADOR ---\n");
+    printf("Nombre: ");
+    scanf(" %[^\n]s", nombre);
+    printf("Email: ");
+    scanf("%s", email);
+    printf("Contraseña: ");
+    scanf("%s", password);
+
+    sprintf(sql, "INSERT INTO usuario (nombre, email, password, admin) VALUES ('%s', '%s', '%s', 1);",
+            nombre, email, password);
+
+    if (sqlite3_exec(db, sql, 0, 0, 0) == SQLITE_OK) {
+        printf("Administrador registrado correctamente.\n");
+    } else {
+        printf("Error al registrar el administrador (es posible que el email ya exista).\n");
+    }
+}

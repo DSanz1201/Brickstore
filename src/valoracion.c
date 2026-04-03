@@ -24,3 +24,30 @@ void InsertarValoracion(sqlite3 *db,Valoracion v){
 	        fflush(stdout);
 	    }
 }
+
+void listarValoraciones(sqlite3 *db) {
+    sqlite3_stmt *stmt;
+    // Consulta con JOIN para ver nombres en lugar de solo IDs
+    char *sql = "SELECT v.puntuacion, v.comentario, u.nombre, p.nombre "
+                "FROM valoracion v "
+                "JOIN usuario u ON v.id_usuario = u.id "
+                "JOIN producto p ON v.id_producto = p.id;";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Error al consultar valoraciones.\n");
+        return;
+    }
+
+    printf("\n--- VALORACIONES DE CLIENTES ---\n");
+    printf("%-15s | %-15s | %-5s | %-20s\n", "Usuario", "Producto", "Nota", "Comentario");
+    printf("----------------------------------------------------------------------\n");
+
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        printf("%-15s | %-15s | %-5d | %s\n",
+               sqlite3_column_text(stmt, 2),
+               sqlite3_column_text(stmt, 3),
+               sqlite3_column_int(stmt, 0),
+               sqlite3_column_text(stmt, 1));
+    }
+    sqlite3_finalize(stmt);
+}

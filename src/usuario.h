@@ -21,4 +21,6 @@ typedef struct{
 // Función para validar credenciales
 int loginUsuario(sqlite3 *db, char* email, char* password, Usuario *u);
 
+void registrarAdmin(sqlite3 *db);
+
 #endif /* USUARIO_H_ */

@@ -20,6 +20,6 @@ typedef struct{
 
 void InsertarValoracion(sqlite3 *db,Valoracion v);
 
-
+void listarValoraciones(sqlite3 *db);
 
 #endif /* VALORACION_H_ */
