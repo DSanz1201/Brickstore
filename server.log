@@ -3153,3 +3153,13 @@
 [2026-04-03 19:27:01] LOGOUT - El administrador ha cerrado la sesión y la herramienta de gestión.
 [2026-04-03 19:28:37] LOGIN OK - Administrador conectado
 [2026-04-03 19:28:40] VALORACIONES - El administrador ha consultado las reseñas.
+[2026-04-03 19:31:40] LOGIN OK - Administrador conectado
+[2026-04-03 19:32:03] INSERTAR - Se ha dado de alta un nuevo producto en la base de datos.
+[2026-04-03 19:32:06] LISTAR - El administrador ha consultado el catálogo completo de productos.
+[2026-04-03 19:32:23] MODIFICAR - Se han actualizado los datos (stock/precio) de un producto existente.
+[2026-04-03 19:32:25] LISTAR - El administrador ha consultado el catálogo completo de productos.
+[2026-04-03 19:32:35] VALORACIONES - El administrador ha consultado las reseñas.
+[2026-04-03 19:32:52] NUEVO_ADMIN - Se ha creado una nueva cuenta de administrador.
+[2026-04-03 19:33:01] LOGOUT - El administrador ha cerrado la sesión y la herramienta de gestión.
+[2026-04-03 19:33:09] LOGIN OK - Administrador conectado
+[2026-04-03 19:33:11] LOGOUT - El administrador ha cerrado la sesión y la herramienta de gestión.
