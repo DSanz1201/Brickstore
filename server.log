@@ -3189,3 +3189,11 @@
 [2026-04-06 23:09:55] LOGOUT - El administrador ha cerrado la sesión y la herramienta de gestión.
 [2026-04-06 23:20:46] LOGIN OK - Administrador conectado
 [2026-04-06 23:20:47] LOGOUT - El administrador ha cerrado la sesión y la herramienta de gestión.
+[2026-04-06 23:34:21] LOGIN OK - Administrador conectado
+[2026-04-06 23:34:23] LOGOUT - El administrador ha cerrado la sesión y la herramienta de gestión.
+[2026-04-06 23:34:35] LOGIN OK - Administrador conectado
+[2026-04-06 23:34:36] LISTAR - El administrador ha consultado el catálogo completo de productos.
+[2026-04-06 23:34:49] MODIFICAR - Se han actualizado los datos (stock/precio) de un producto existente.
+[2026-04-06 23:34:50] LISTAR - El administrador ha consultado el catálogo completo de productos.
+[2026-04-06 23:34:58] VALORACIONES - El administrador ha consultado las reseñas.
+[2026-04-06 23:35:02] LOGOUT - El administrador ha cerrado la sesión y la herramienta de gestión.
