@@ -96,22 +96,22 @@ void inicializarFicheroUsuarios(char *nombreFichero, sqlite3 *db){
     int leidos;
 
     while(fgets(linea, sizeof(linea), f) != NULL){
-        printf("Linea leida: %s", linea);
-        fflush(stdout);
+//        printf("Linea leida: %s", linea);
+//        fflush(stdout);
 
         leidos = sscanf(linea, "%d;%49[^;];%79[^;];%29[^;];%d",
                         &u.id, u.nombre, u.email, u.password, &u.admin);
 
-        if(leidos == 5){
-            printf("Usuario parseado: %d %s %s %s %d\n",
-                   u.id, u.nombre, u.email, u.password, u.admin);
-            fflush(stdout);
-
-            insertarUsuario(db, u);
-        } else {
-            printf("Error parseando linea. Campos leidos = %d\n", leidos);
-            fflush(stdout);
-        }
+//        if(leidos == 5){
+//            printf("Usuario parseado: %d %s %s %s %d\n",
+//                   u.id, u.nombre, u.email, u.password, u.admin);
+//            fflush(stdout);
+//
+//            insertarUsuario(db, u);
+//        } else {
+//            printf("Error parseando linea. Campos leidos = %d\n", leidos);
+//            fflush(stdout);
+//        }
     }
 
     fclose(f);
