@@ -1,4 +1,3 @@
-
 2;102;2;4;Buen set de arquitectura, aunque caro
 3;103;3;5;Me encanta este coche de Technic, muy realista
 4;104;2;3;Esperaba mas piezas por el precio

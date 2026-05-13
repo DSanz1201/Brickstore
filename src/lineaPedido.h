@@ -11,7 +11,6 @@
 
 typedef struct{
     int id;
-    int id_pedido;
     int id_producto;
     int cantidad;
 } lineaPedido;

@@ -18,16 +18,14 @@ int loginUsuario(sqlite3 *db, char* email, char* password, Usuario *u) {
     char *sql = "SELECT id, nombre, email, password, admin FROM usuario WHERE email = ? AND password = ?;";
     int result = 0;
 
-    //Preparamos la consulta
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
-        printf("Error al preparar el login\n");
+        printf("Error al preparar el login: %s\n", sqlite3_errmsg(db));
         return 0;
     }
 
-    sqlite3_bind_text(stmt, 1, email, -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 2, password, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 1, email, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, password, -1, SQLITE_TRANSIENT);
 
-    //Ejecutamos la consulta
     if (sqlite3_step(stmt) == SQLITE_ROW) {
         u->id = sqlite3_column_int(stmt, 0);
         strcpy(u->nombre, (char*)sqlite3_column_text(stmt, 1));
@@ -35,10 +33,10 @@ int loginUsuario(sqlite3 *db, char* email, char* password, Usuario *u) {
         strcpy(u->password, (char*)sqlite3_column_text(stmt, 3));
         u->admin = sqlite3_column_int(stmt, 4);
         result = 1;
-
     } else {
         printf("Credenciales incorrectas.\n");
     }
+
     sqlite3_finalize(stmt);
     return result;
 }
@@ -69,7 +67,7 @@ void insertarUsuario(sqlite3 *db, Usuario u){
     char *errMsg = 0;
 
     sprintf(sql,
-        "INSERT INTO usuario (id, nombre, email, password, admin) "
+        "INSERT OR IGNORE INTO usuario (id, nombre, email, password, admin) "
         "VALUES (%d, '%s', '%s', '%s', %d);",
         u.id, u.nombre, u.email, u.password, u.admin);
 
@@ -77,10 +75,10 @@ void insertarUsuario(sqlite3 *db, Usuario u){
         printf("Error insertando usuario: %s\n", errMsg);
         fflush(stdout);
         sqlite3_free(errMsg);
-    } else {
-        printf("Usuario insertado: %s\n", u.nombre);
-        fflush(stdout);
-    }
+    } //else {
+//        printf("Usuario insertado: %s\n", u.nombre);
+//        fflush(stdout);
+//    }
 }
 void inicializarFicheroUsuarios(char *nombreFichero, sqlite3 *db){
     FILE *f = fopen(nombreFichero, "r");
@@ -102,16 +100,16 @@ void inicializarFicheroUsuarios(char *nombreFichero, sqlite3 *db){
         leidos = sscanf(linea, "%d;%49[^;];%79[^;];%29[^;];%d",
                         &u.id, u.nombre, u.email, u.password, &u.admin);
 
-//        if(leidos == 5){
+        if(leidos == 5){
 //            printf("Usuario parseado: %d %s %s %s %d\n",
 //                   u.id, u.nombre, u.email, u.password, u.admin);
 //            fflush(stdout);
-//
-//            insertarUsuario(db, u);
-//        } else {
+
+            insertarUsuario(db, u);
+        } //else {
 //            printf("Error parseando linea. Campos leidos = %d\n", leidos);
 //            fflush(stdout);
-//        }
+     //   }
     }
 
     fclose(f);
