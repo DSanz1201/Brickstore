@@ -3289,3 +3289,34 @@
 [2026-05-13 12:27:06] REG_ADMIN - Nuevo administrador registrado
 [2026-05-13 12:27:10] SALIR - Cliente desconectado
 [2026-05-13 12:27:10] Servidor cerrado
+[2026-05-14 18:32:16] Servidor iniciado
+[2026-05-14 18:32:16] Servidor escuchando conexiones
+[2026-05-14 18:32:26] Cliente conectado
+[2026-05-14 18:32:45] LOGIN OK - Administrador conectado
+[2026-05-14 18:32:52] LISTAR - Productos consultados
+[2026-05-14 18:33:05] ADD - Producto insertado
+[2026-05-14 18:33:08] LISTAR - Productos consultados
+[2026-05-14 18:33:15] SALIR - Cliente desconectado
+[2026-05-14 18:33:15] Servidor cerrado
+[2026-05-17 19:51:00] Servidor iniciado
+[2026-05-17 19:51:00] Servidor escuchando conexiones
+[2026-05-17 19:51:04] Cliente conectado
+[2026-05-17 19:51:25] LOGIN OK - Administrador conectado
+[2026-05-17 19:51:50] LISTAR - Productos consultados
+[2026-05-17 19:54:45] DELETE - Producto eliminado
+[2026-05-17 19:54:50] LISTAR - Productos consultados
+[2026-05-17 19:54:55] DELETE - Producto eliminado
+[2026-05-17 19:55:05] LISTAR - Productos consultados
+[2026-05-17 20:00:06] Cliente desconectado inesperadamente
+[2026-05-17 20:00:06] Servidor cerrado
+[2026-05-17 20:02:36] Servidor iniciado
+[2026-05-17 20:02:36] Servidor escuchando conexiones
+[2026-05-17 20:02:38] Cliente conectado
+[2026-05-17 20:02:44] LOGIN OK - Administrador conectado
+[2026-05-17 20:06:29] LISTAR - Productos consultados
+[2026-05-17 20:07:14] UPDATE - Producto modificado
+[2026-05-17 20:07:15] LISTAR - Productos consultados
+[2026-05-17 20:07:55] DELETE - Producto eliminado
+[2026-05-17 20:08:02] VALORACIONES - Consultadas
+[2026-05-17 20:10:35] SALIR - Cliente desconectado
+[2026-05-17 20:10:35] Servidor cerrado

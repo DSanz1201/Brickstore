@@ -1,12 +1,15 @@
 /*
  ============================================================================
  Name        : Brickstore.c
- Author      : Luken de Esquibel and Danel Sanz
+ Author      : Luken de Esquibel, Danel Sanz and Josu
  Version     :
  Copyright   : Your copyright notice
  Description : Hello World in C, Ansi-style
  ============================================================================
  */
+
+// Usuario (Admin) = admin
+// Contraseña = 1234
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,10 +23,6 @@
 
 #define PORT 5000
 #define BUFFER_SIZE 4096
-
-// ===============================
-// LOG
-// ===============================
 
 void escribirLog(char *mensaje) {
     FILE *f = fopen("server.log", "a");
@@ -44,10 +43,6 @@ void escribirLog(char *mensaje) {
         fclose(f);
     }
 }
-
-// ===============================
-// CREAR TABLAS
-// ===============================
 
 void inicializarDB(sqlite3 *db) {
     char *sql1 =
@@ -85,200 +80,6 @@ void inicializarDB(sqlite3 *db) {
         "VALUES (1, 'Admin', 'admin', '1234', 1);",
         0, 0, 0);
 }
-
-// ===============================
-// CARGAR PRODUCTOS DESDE FICHERO
-// ===============================
-
-void inicializarFichero(char *nombreFichero, sqlite3 *db) {
-    FILE *f = fopen(nombreFichero, "r");
-
-    if (f != NULL) {
-        Producto p;
-
-        while (fscanf(f, " %d;%49[^;];%d;%f",
-                      &p.id,
-                      p.nombre,
-                      &p.stock,
-                      &p.precio) == 4) {
-            insertarProducto(db, p);
-        }
-
-        fclose(f);
-    } else {
-        printf("Error abriendo fichero de productos\n");
-    }
-}
-
-// ===============================
-// CARGAR VALORACIONES
-// ===============================
-
-void cargarValoracionesFichero(char *nombreFichero, sqlite3 *db) {
-    FILE *f = fopen(nombreFichero, "r");
-
-    if (f != NULL) {
-        Valoracion v;
-
-        while (fscanf(f, " %d;%d;%d;%d;%199[^\n\r]",
-                      &v.id,
-                      &v.id_usuario,
-                      &v.id_producto,
-                      &v.puntuacion,
-                      v.comentario) == 5) {
-            InsertarValoracion(db, v);
-        }
-
-        fclose(f);
-    } else {
-        printf("Error abriendo fichero de valoraciones\n");
-    }
-}
-
-// ===============================
-// LISTAR PRODUCTOS PARA CLIENTE
-// ===============================
-
-void listarProductosServidor(sqlite3 *db, char *respuesta) {
-    sqlite3_stmt *stmt;
-    char *sql = "SELECT id, nombre, stock, precio FROM producto;";
-
-    strcpy(respuesta, "\n--- CATALOGO DE PRODUCTOS ---\n");
-
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
-        strcpy(respuesta, "ERROR;No se pudo consultar productos");
-        return;
-    }
-
-    while (sqlite3_step(stmt) == SQLITE_ROW) {
-        char linea[300];
-
-        sprintf(linea,
-                "ID: %d | Nombre: %s | Stock: %d | Precio: %.2f\n",
-                sqlite3_column_int(stmt, 0),
-                sqlite3_column_text(stmt, 1),
-                sqlite3_column_int(stmt, 2),
-                sqlite3_column_double(stmt, 3));
-
-        strcat(respuesta, linea);
-    }
-
-    sqlite3_finalize(stmt);
-}
-
-// ===============================
-// LISTAR VALORACIONES PARA CLIENTE
-// ===============================
-
-void listarValoracionesServidor(sqlite3 *db, char *respuesta) {
-    sqlite3_stmt *stmt;
-
-    char *sql =
-        "SELECT v.puntuacion, v.comentario, u.nombre, p.nombre "
-        "FROM valoracion v "
-        "LEFT JOIN usuario u ON v.id_usuario = u.id "
-        "LEFT JOIN producto p ON v.id_producto = p.id;";
-
-    strcpy(respuesta, "\n--- VALORACIONES DE CLIENTES ---\n");
-
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
-        strcpy(respuesta, "ERROR;No se pudo consultar valoraciones");
-        return;
-    }
-
-    while (sqlite3_step(stmt) == SQLITE_ROW) {
-        char linea[500];
-
-        sprintf(linea,
-                "Usuario: %s | Producto: %s | Nota: %d | Comentario: %s\n",
-                sqlite3_column_text(stmt, 2),
-                sqlite3_column_text(stmt, 3),
-                sqlite3_column_int(stmt, 0),
-                sqlite3_column_text(stmt, 1));
-
-        strcat(respuesta, linea);
-    }
-
-    sqlite3_finalize(stmt);
-}
-
-// ===============================
-// INSERTAR PRODUCTO
-// ===============================
-
-void insertarProductoServidor(sqlite3 *db, Producto p, char *respuesta) {
-    insertarProducto(db, p);
-    strcpy(respuesta, "OK;Producto insertado correctamente");
-}
-
-// ===============================
-// MODIFICAR PRODUCTO
-// ===============================
-
-void modificarProductoServidor(sqlite3 *db, int id, int stock, float precio, char *respuesta) {
-    sqlite3_stmt *stmt;
-
-    char *sql =
-        "UPDATE producto "
-        "SET stock = ?, precio = ? "
-        "WHERE id = ?;";
-
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
-        strcpy(respuesta, "ERROR;No se pudo preparar modificacion");
-        return;
-    }
-
-    sqlite3_bind_int(stmt, 1, stock);
-    sqlite3_bind_double(stmt, 2, precio);
-    sqlite3_bind_int(stmt, 3, id);
-
-    if (sqlite3_step(stmt) == SQLITE_DONE) {
-        strcpy(respuesta, "OK;Producto modificado correctamente");
-    } else {
-        strcpy(respuesta, "ERROR;No se pudo modificar producto");
-    }
-
-    sqlite3_finalize(stmt);
-}
-
-// ===============================
-// ELIMINAR PRODUCTO
-// ===============================
-
-void eliminarProductoServidor(sqlite3 *db, int id, char *respuesta) {
-    sqlite3_stmt *stmt;
-
-    char *sql = "DELETE FROM producto WHERE id = ?;";
-
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
-        strcpy(respuesta, "ERROR;No se pudo preparar eliminacion");
-        return;
-    }
-
-    sqlite3_bind_int(stmt, 1, id);
-
-    if (sqlite3_step(stmt) == SQLITE_DONE) {
-        strcpy(respuesta, "OK;Producto eliminado correctamente");
-    } else {
-        strcpy(respuesta, "ERROR;No se pudo eliminar producto");
-    }
-
-    sqlite3_finalize(stmt);
-}
-
-// ===============================
-// REGISTRAR ADMIN
-// ===============================
-
-void registrarAdminServidor(sqlite3 *db, Usuario u, char *respuesta) {
-    u.admin = 1;
-    insertarUsuario(db, u);
-    strcpy(respuesta, "OK;Administrador registrado correctamente");
-}
-
-// ===============================
-// PROCESAR COMANDOS DEL CLIENTE
-// ===============================
 
 void procesarComando(sqlite3 *db, char *comando, char *respuesta) {
     char copia[BUFFER_SIZE];
@@ -349,12 +150,7 @@ void procesarComando(sqlite3 *db, char *comando, char *respuesta) {
             return;
         }
 
-        modificarProductoServidor(db,
-                                  atoi(id),
-                                  atoi(stock),
-                                  atof(precio),
-                                  respuesta);
-
+        modificarProductoServidor(db, atoi(id), atoi(stock), atof(precio), respuesta);
         escribirLog("UPDATE - Producto modificado");
     }
 
@@ -408,10 +204,6 @@ void procesarComando(sqlite3 *db, char *comando, char *respuesta) {
     }
 }
 
-// ===============================
-// MAIN SERVIDOR
-// ===============================
-
 int main() {
     setbuf(stdout, NULL);
 
@@ -432,26 +224,17 @@ int main() {
 
     sqlite3 *db;
 
-    // ===============================
-    // ABRIR BD
-    // ===============================
-
     if (sqlite3_open("brickstore.db", &db) != SQLITE_OK) {
         printf("Error al abrir BD: %s\n", sqlite3_errmsg(db));
         return 1;
     }
 
     inicializarDB(db);
-
     inicializarFichero("lego.txt", db);
     inicializarFicheroUsuarios("usuario.txt", db);
     cargarValoracionesFichero("valoracion.txt", db);
 
     escribirLog("Servidor iniciado");
-
-    // ===============================
-    // INICIAR WINSOCK
-    // ===============================
 
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
         printf("Error inicializando Winsock\n");
@@ -469,10 +252,6 @@ int main() {
         sqlite3_close(db);
         return 1;
     }
-
-    // ===============================
-    // CONFIGURAR SERVIDOR
-    // ===============================
 
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = INADDR_ANY;
@@ -499,10 +278,6 @@ int main() {
     printf("Servidor BrickStore escuchando en puerto %d...\n", PORT);
     escribirLog("Servidor escuchando conexiones");
 
-    // ===============================
-    // ACEPTAR CLIENTE
-    // ===============================
-
     clientSize = sizeof(clientAddr);
 
     cliente = accept(servidor, (struct sockaddr *)&clientAddr, &clientSize);
@@ -518,10 +293,6 @@ int main() {
 
     printf("Cliente conectado.\n");
     escribirLog("Cliente conectado");
-
-    // ===============================
-    // BUCLE PRINCIPAL
-    // ===============================
 
     while (1) {
         memset(buffer, 0, BUFFER_SIZE);
@@ -549,10 +320,6 @@ int main() {
             break;
         }
     }
-
-    // ===============================
-    // CERRAR TODO
-    // ===============================
 
     closesocket(cliente);
     closesocket(servidor);

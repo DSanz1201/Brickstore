@@ -15,14 +15,15 @@ typedef struct{
     char nombre[50];
     char email[80];
     char password[30];
-    int admin;  // 1 si es admin / 0 si es usuario normal
+    int admin;
 } Usuario;
 
-// Función para validar credenciales
 int loginUsuario(sqlite3 *db, char* email, char* password, Usuario *u);
 void insertarUsuario(sqlite3 *db, Usuario u);
 void inicializarFicheroUsuarios(char *nombreFichero, sqlite3 *db);
-
 void registrarAdmin(sqlite3 *db);
 
-#endif /* USUARIO_H_ */
+/* Función para servidor sockets */
+void registrarAdminServidor(sqlite3 *db, Usuario u, char *respuesta);
+
+#endif

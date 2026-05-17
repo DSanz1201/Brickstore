@@ -4,10 +4,10 @@
  *  Created on: 21 mar 2026
  *      Author: l.esquibel
  */
-
-#include"producto.h"
+#include "producto.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "sqlite3.h"
 
 void insertarProducto(sqlite3 *db, Producto p){
@@ -22,96 +22,114 @@ void insertarProducto(sqlite3 *db, Producto p){
         printf("Error insertando producto\n");
     }
 }
-void anyadirProducto(sqlite3 *db) {
-	Producto p;
-	    printf("\n--- AÑADIR NUEVO PRODUCTO ---\n");
-	    printf("ID: ");
-	    scanf("%d", &p.id);
-	    printf("Nombre: ");
-	    fflush(stdin); // Limpiar buffer
-	    scanf(" %[^\n]s", p.nombre); // Leer con espacios
-	    printf("Stock inicial: ");
-	    scanf("%d", &p.stock);
-	    printf("Precio: ");
-	    scanf("%f", &p.precio);
 
-	    insertarProducto(db, p);
-	    printf("Producto añadido correctamente a la base de datos.\n");
+void inicializarFichero(char *nombreFichero, sqlite3 *db) {
+    FILE *f = fopen(nombreFichero, "r");
+
+    if (f != NULL) {
+        Producto p;
+
+        while (fscanf(f, " %d;%49[^;];%d;%f",
+                      &p.id,
+                      p.nombre,
+                      &p.stock,
+                      &p.precio) == 4) {
+            insertarProducto(db, p);
+        }
+
+        fclose(f);
+    } else {
+        printf("Error abriendo fichero de productos\n");
+    }
 }
 
-void listarProductos(sqlite3 *db) {
-	sqlite3_stmt *stmt;
-	    char *sql = "SELECT id, nombre, stock, precio FROM producto;";
+void listarProductosServidor(sqlite3 *db, char *respuesta) {
+    sqlite3_stmt *stmt;
+    char *sql = "SELECT id, nombre, stock, precio FROM producto;";
 
-	    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
-	        printf("Error al preparar la consulta de listado.\n");
-	        return;
-	    }
+    strcpy(respuesta, "\n--- CATALOGO DE PRODUCTOS ---\n");
 
-	    printf("\n====================================================================\n");
-	    printf("%-5s | %-35s | %-8s | %-10s\n", "ID", "Nombre del Producto", "Stock", "Precio");
-	    printf("--------------------------------------------------------------------\n");
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        strcpy(respuesta, "ERROR;No se pudo consultar productos");
+        return;
+    }
 
-	    while (sqlite3_step(stmt) == SQLITE_ROW) {
-	        int id = sqlite3_column_int(stmt, 0);
-	        const unsigned char *nombre = sqlite3_column_text(stmt, 1);
-	        int stock = sqlite3_column_int(stmt, 2);
-	        double precio = sqlite3_column_double(stmt, 3);
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        char linea[300];
 
-	        printf("%-5d | %-35.35s | %-8d | %-8.2f EUR\n", id, nombre, stock, precio);
-	    }
-	    printf("====================================================================\n");
+        sprintf(linea,
+                "ID: %d | Nombre: %s | Stock: %d | Precio: %.2f\n",
+                sqlite3_column_int(stmt, 0),
+                sqlite3_column_text(stmt, 1),
+                sqlite3_column_int(stmt, 2),
+                sqlite3_column_double(stmt, 3));
 
-	    sqlite3_finalize(stmt);
+        strcat(respuesta, linea);
+    }
+
+    sqlite3_finalize(stmt);
 }
-void modificarProducto(sqlite3 *db) {
-	int id, opcion;
-	    float nuevoValor;
-	    char sql[200];
 
-	    printf("\n--- MODIFICAR PRODUCTO ---\n");
-	    printf("Introduzca el ID del producto a modificar: ");
-	    scanf("%d", &id);
-
-	    printf("¿Qué desea modificar?\n1. Stock\n2. Precio\nSelección: ");
-	    scanf("%d", &opcion);
-
-	    if (opcion == 1) {
-	        printf("Nuevo stock: ");
-	        scanf("%f", &nuevoValor);
-	        sprintf(sql, "UPDATE producto SET stock = %d WHERE id = %d;", (int)nuevoValor, id);
-	    } else {
-	        printf("Nuevo precio: ");
-	        scanf("%f", &nuevoValor);
-	        sprintf(sql, "UPDATE producto SET precio = %.2f WHERE id = %d;", nuevoValor, id);
-	    }
-
-	    if (sqlite3_exec(db, sql, 0, 0, 0) == SQLITE_OK) {
-	        printf("Producto actualizado con éxito.\n");
-	    } else {
-	        printf("Error al actualizar el producto.\n");
-	    }
+void insertarProductoServidor(sqlite3 *db, Producto p, char *respuesta) {
+    insertarProducto(db, p);
+    strcpy(respuesta, "OK;Producto insertado correctamente");
 }
-void eliminarProducto(sqlite3 *db) {
-	int id;
-	    char sql[100];
-	    char confirmacion;
 
-	    printf("\n--- ELIMINAR PRODUCTO ---\n");
-	    printf("Introduzca el ID del producto que desea eliminar: ");
-	    scanf("%d", &id);
+void modificarProductoServidor(sqlite3 *db, int id, int stock, float precio, char *respuesta) {
+    sqlite3_stmt *stmt;
 
-	    printf("¿Está seguro de que desea eliminar el producto %d? (s/n): ", id);
-	    scanf(" %c", &confirmacion);
+    char *sql =
+        "UPDATE producto "
+        "SET stock = ?, precio = ? "
+        "WHERE id = ?;";
 
-	    if (confirmacion == 's' || confirmacion == 'S') {
-	        sprintf(sql, "DELETE FROM producto WHERE id = %d;", id);
-	        if (sqlite3_exec(db, sql, 0, 0, 0) == SQLITE_OK) {
-	            printf("Producto eliminado correctamente.\n");
-	        } else {
-	            printf("Error al eliminar el producto.\n");
-	        }
-	    } else {
-	        printf("Operación cancelada.\n");
-	    }
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        strcpy(respuesta, "ERROR;No se pudo preparar modificacion");
+        return;
+    }
+
+    sqlite3_bind_int(stmt, 1, stock);
+    sqlite3_bind_double(stmt, 2, precio);
+    sqlite3_bind_int(stmt, 3, id);
+
+    if (sqlite3_step(stmt) == SQLITE_DONE) {
+
+        if (sqlite3_changes(db) > 0) {
+            strcpy(respuesta, "OK;Producto modificado correctamente");
+        } else {
+            strcpy(respuesta, "ERROR;No existe ningun producto con ese ID");
+        }
+
+    } else {
+        sprintf(respuesta, "ERROR;No se pudo modificar producto: %s", sqlite3_errmsg(db));
+    }
+
+    sqlite3_finalize(stmt);
+}
+
+void eliminarProductoServidor(sqlite3 *db, int id, char *respuesta) {
+    sqlite3_stmt *stmt;
+
+    char *sql = "DELETE FROM producto WHERE id = ?;";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        sprintf(respuesta, "ERROR;No se pudo preparar eliminacion: %s", sqlite3_errmsg(db));
+        return;
+    }
+
+    sqlite3_bind_int(stmt, 1, id);
+
+    if (sqlite3_step(stmt) == SQLITE_DONE) {
+
+        if (sqlite3_changes(db) > 0) {
+            strcpy(respuesta, "OK;Producto eliminado correctamente");
+        } else {
+            strcpy(respuesta, "ERROR;No existe ningun producto con ese ID");
+        }
+
+    } else {
+        sprintf(respuesta, "ERROR;No se pudo eliminar producto: %s", sqlite3_errmsg(db));
+    }
+
+    sqlite3_finalize(stmt);
 }

@@ -4,7 +4,6 @@
  *  Created on: 22 mar 2026
  *      Author: l.esquibel
  */
-
 #ifndef VALORACION_H_
 #define VALORACION_H_
 
@@ -18,8 +17,11 @@ typedef struct{
     char comentario[200];
 } Valoracion;
 
-void InsertarValoracion(sqlite3 *db,Valoracion v);
-
+void InsertarValoracion(sqlite3 *db, Valoracion v);
 void listarValoraciones(sqlite3 *db);
 
-#endif /* VALORACION_H_ */
+/* Funciones para servidor sockets */
+void cargarValoracionesFichero(char *nombreFichero, sqlite3 *db);
+void listarValoracionesServidor(sqlite3 *db, char *respuesta);
+
+#endif

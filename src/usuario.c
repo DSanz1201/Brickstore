@@ -4,14 +4,11 @@
  *  Created on: 21 mar 2026
  *      Author: l.esquibel
  */
-
-#include"producto.h"
+#include "usuario.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "sqlite3.h"
-#include "usuario.h"
 
 int loginUsuario(sqlite3 *db, char* email, char* password, Usuario *u) {
     sqlite3_stmt *stmt;
@@ -33,35 +30,12 @@ int loginUsuario(sqlite3 *db, char* email, char* password, Usuario *u) {
         strcpy(u->password, (char*)sqlite3_column_text(stmt, 3));
         u->admin = sqlite3_column_int(stmt, 4);
         result = 1;
-    } else {
-        printf("Credenciales incorrectas.\n");
     }
 
     sqlite3_finalize(stmt);
     return result;
 }
 
-void registrarAdmin(sqlite3 *db) {
-    char nombre[50], email[80], password[30];
-    char sql[300];
-
-    printf("\n--- REGISTRAR NUEVO ADMINISTRADOR ---\n");
-    printf("Nombre: ");
-    scanf(" %[^\n]s", nombre);
-    printf("Email: ");
-    scanf("%s", email);
-    printf("Contraseña: ");
-    scanf("%s", password);
-
-    sprintf(sql, "INSERT INTO usuario (nombre, email, password, admin) VALUES ('%s', '%s', '%s', 1);",
-            nombre, email, password);
-
-    if (sqlite3_exec(db, sql, 0, 0, 0) == SQLITE_OK) {
-        printf("Administrador registrado correctamente.\n");
-    } else {
-        printf("Error al registrar el administrador (es posible que el email ya exista).\n");
-    }
-}
 void insertarUsuario(sqlite3 *db, Usuario u){
     char sql[300];
     char *errMsg = 0;
@@ -73,19 +47,15 @@ void insertarUsuario(sqlite3 *db, Usuario u){
 
     if(sqlite3_exec(db, sql, 0, 0, &errMsg) != SQLITE_OK){
         printf("Error insertando usuario: %s\n", errMsg);
-        fflush(stdout);
         sqlite3_free(errMsg);
-    } //else {
-//        printf("Usuario insertado: %s\n", u.nombre);
-//        fflush(stdout);
-//    }
+    }
 }
+
 void inicializarFicheroUsuarios(char *nombreFichero, sqlite3 *db){
     FILE *f = fopen(nombreFichero, "r");
 
     if(f == NULL){
         printf("Error abriendo fichero de usuarios\n");
-        fflush(stdout);
         return;
     }
 
@@ -94,24 +64,45 @@ void inicializarFicheroUsuarios(char *nombreFichero, sqlite3 *db){
     int leidos;
 
     while(fgets(linea, sizeof(linea), f) != NULL){
-//        printf("Linea leida: %s", linea);
-//        fflush(stdout);
-
         leidos = sscanf(linea, "%d;%49[^;];%79[^;];%29[^;];%d",
                         &u.id, u.nombre, u.email, u.password, &u.admin);
 
         if(leidos == 5){
-//            printf("Usuario parseado: %d %s %s %s %d\n",
-//                   u.id, u.nombre, u.email, u.password, u.admin);
-//            fflush(stdout);
-
             insertarUsuario(db, u);
-        } //else {
-//            printf("Error parseando linea. Campos leidos = %d\n", leidos);
-//            fflush(stdout);
-     //   }
+        }
     }
 
     fclose(f);
 }
 
+void registrarAdmin(sqlite3 *db) {
+    char nombre[50], email[80], password[30];
+    Usuario u;
+
+    printf("\n--- REGISTRAR NUEVO ADMINISTRADOR ---\n");
+
+    printf("Nombre: ");
+    scanf(" %[^\n]", nombre);
+
+    printf("Email: ");
+    scanf("%s", email);
+
+    printf("Contraseña: ");
+    scanf("%s", password);
+
+    u.id = 0;
+    strcpy(u.nombre, nombre);
+    strcpy(u.email, email);
+    strcpy(u.password, password);
+    u.admin = 1;
+
+    insertarUsuario(db, u);
+
+    printf("Administrador registrado correctamente.\n");
+}
+
+void registrarAdminServidor(sqlite3 *db, Usuario u, char *respuesta) {
+    u.admin = 1;
+    insertarUsuario(db, u);
+    strcpy(respuesta, "OK;Administrador registrado correctamente");
+}
