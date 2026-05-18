@@ -9,11 +9,11 @@
 #define LINEAPEDIDO_H_
 #include "sqlite3.h"
 
-typedef struct{
-    int id;
+typedef struct LineaPedido {
     int id_producto;
     int cantidad;
-} lineaPedido;
+    struct LineaPedido *siguiente; // Puntero al siguiente elemento de la lista
+} LineaPedido;
 
 
 #endif /* LINEAPEDIDO_H_ */

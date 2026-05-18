@@ -273,24 +273,48 @@ void procesarComando(sqlite3 *db, char *comando, char *respuesta) {
     }
 
     else if (strcmp(accion, "CREATE_ORDER") == 0) {
-        char *id_usr_str = strtok(NULL, ";");
-        char *lineas_str = strtok(NULL, ";");
+            char *id_usr_str = strtok(NULL, ";");
+            char *lineas_str = strtok(NULL, ";");
 
-        if (id_usr_str == NULL || lineas_str == NULL) {
-            strcpy(respuesta, "ERROR;Formato de pedido incompleto");
-            return;
+            if (id_usr_str == NULL || lineas_str == NULL) {
+                strcpy(respuesta, "ERROR;Formato de pedido incompleto");
+                return;
+            }
+
+            Pedido *nuevoPedido = (Pedido *)malloc(sizeof(Pedido));
+            nuevoPedido->id_usuario = atoi(id_usr_str);
+
+            time_t t = time(NULL);
+            struct tm tm = *localtime(&t);
+            sprintf(nuevoPedido->fecha, "%04d-%02d-%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
+
+            nuevoPedido->lineas = NULL;
+
+            char *item = strtok(lineas_str, ",");
+            while (item != NULL) {
+                int id_prod = 0, cant = 0;
+                if (sscanf(item, "%d:%d", &id_prod, &cant) == 2) {
+
+                    LineaPedido *nuevaLinea = (LineaPedido *)malloc(sizeof(LineaPedido));
+                    nuevaLinea->id_producto = id_prod;
+                    nuevaLinea->cantidad = cant;
+
+                    nuevaLinea->siguiente = nuevoPedido->lineas;
+                    nuevoPedido->lineas = nuevaLinea;
+                }
+                item = strtok(NULL, ",");
+            }
+
+            registrarPedidoBD(db, nuevoPedido, respuesta);
+
+            liberarPedido(nuevoPedido);
+
+            if (strncmp(respuesta, "OK", 2) == 0) {
+                escribirLog("CREATE_ORDER - Compra realizada con exito");
+            } else {
+                escribirLog("CREATE_ORDER - Error al registrar la compra en BD");
+            }
         }
-
-        int id_usuario = atoi(id_usr_str);
-
-        registrarPedidoBD(db, id_usuario, lineas_str, respuesta);
-
-        if (strncmp(respuesta, "OK", 2) == 0) {
-            escribirLog("CREATE_ORDER - Compra realizada con exito");
-        } else {
-            escribirLog("CREATE_ORDER - Error al registrar la compra en BD");
-        }
-    }
 
     else if (strcmp(accion, "GET_ORDERS") == 0) {
         char *id_usr_str = strtok(NULL, ";");

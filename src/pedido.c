@@ -4,14 +4,10 @@
 #include <time.h>
 #include "pedido.h"
 
-void registrarPedidoBD(sqlite3 *db, int id_usuario, char *lineas_str, char *respuesta) {
+void registrarPedidoBD(sqlite3 *db, Pedido *p, char *respuesta) {
     char sql_pedido[256];
-    time_t t = time(NULL);
-    struct tm tm = *localtime(&t);
-    char fecha[20];
-    sprintf(fecha, "%04d-%02d-%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
 
-    sprintf(sql_pedido, "INSERT INTO pedido (id_usuario, fecha) VALUES (%d, '%s');", id_usuario, fecha);
+    sprintf(sql_pedido, "INSERT INTO pedido (id_usuario, fecha) VALUES (%d, '%s');", p->id_usuario, p->fecha);
 
     if (sqlite3_exec(db, sql_pedido, 0, 0, 0) != SQLITE_OK) {
         strcpy(respuesta, "ERROR;Fallo al procesar pedido en Base de Datos");
@@ -20,23 +16,34 @@ void registrarPedidoBD(sqlite3 *db, int id_usuario, char *lineas_str, char *resp
 
     long long id_pedido = sqlite3_last_insert_rowid(db);
 
-    char *item = strtok(lineas_str, ",");
-    while (item != NULL) {
-        int id_prod = 0;
-        int cant = 0;
-        if (sscanf(item, "%d:%d", &id_prod, &cant) == 2) {
-            char sql_linea[256];
-            sprintf(sql_linea, "INSERT INTO linea_pedido (id_pedido, id_producto, cantidad) VALUES (%lld, %d, %d);", id_pedido, id_prod, cant);
-            sqlite3_exec(db, sql_linea, 0, 0, 0);
+    LineaPedido *actual = p->lineas;
 
-            char sql_stock[256];
-            sprintf(sql_stock, "UPDATE producto SET stock = stock - %d WHERE id = %d;", cant, id_prod);
-            sqlite3_exec(db, sql_stock, 0, 0, 0);
-        }
-        item = strtok(NULL, ",");
+    while (actual != NULL) {
+        char sql_linea[256];
+        sprintf(sql_linea, "INSERT INTO linea_pedido (id_pedido, id_producto, cantidad) VALUES (%lld, %d, %d);",
+                id_pedido, actual->id_producto, actual->cantidad);
+        sqlite3_exec(db, sql_linea, 0, 0, 0);
+
+        char sql_stock[256];
+        sprintf(sql_stock, "UPDATE producto SET stock = stock - %d WHERE id = %d;",
+                actual->cantidad, actual->id_producto);
+        sqlite3_exec(db, sql_stock, 0, 0, 0);
+
+        actual = actual->siguiente;
     }
 
     strcpy(respuesta, "OK;Pedido guardado y stock actualizado correctamente");
+}
+
+void liberarPedido(Pedido *p) {
+    if (p == NULL) return;
+
+    LineaPedido *actual = p->lineas;
+    while (actual != NULL) {
+        LineaPedido *siguiente = actual->siguiente;
+        actual = siguiente;
+    }
+    free(p);
 }
 
 void consultarPedidosBD(sqlite3 *db, int id_usuario, char *respuesta) {
