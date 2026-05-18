@@ -195,6 +195,35 @@ void procesarComando(sqlite3 *db, char *comando, char *respuesta) {
         escribirLog("VALORACIONES - Consultadas");
     }
 
+    else if (strcmp(accion, "ADD_VALORACION") == 0) {
+        char *id_usr_str = strtok(NULL, ";");
+        char *id_prod_str = strtok(NULL, ";");
+        char *puntuacion_str = strtok(NULL, ";");
+        char *comentario = strtok(NULL, ";");
+
+        if (id_usr_str == NULL || id_prod_str == NULL || puntuacion_str == NULL || comentario == NULL) {
+            strcpy(respuesta, "ERROR;Formato ADD_VALORACION incorrecto");
+            return;
+        }
+
+        int id_usuario = atoi(id_usr_str);
+        int id_producto = atoi(id_prod_str);
+        int puntuacion = atoi(puntuacion_str);
+
+        char sql[512];
+        sprintf(sql, "INSERT INTO valoracion (id_usuario, id_producto, puntuacion, comentario) VALUES (%d, %d, %d, '%s');", id_usuario, id_producto, puntuacion, comentario);
+
+        char *err_msg = 0;
+        if (sqlite3_exec(db, sql, 0, 0, &err_msg) != SQLITE_OK) {
+            sprintf(respuesta, "ERROR;No se pudo guardar la valoracion: %s", err_msg);
+            sqlite3_free(err_msg);
+            escribirLog("ADD_VALORACION ERROR - Fallo en BD o ID de producto inexistente");
+        } else {
+            strcpy(respuesta, "OK;Valoracion guardada y publicada correctamente");
+            escribirLog("ADD_VALORACION OK - Nueva valoracion registrada");
+        }
+    }
+
     else if (strcmp(accion, "REG_ADMIN") == 0) {
         Usuario u;
 
