@@ -17,4 +17,7 @@ typedef struct{
     char fecha[20];
 } Pedido;
 
+void registrarPedidoBD(sqlite3 *db, int id_usuario, char *lineas_str, char *respuesta);
+void consultarPedidosBD(sqlite3 *db, int id_usuario, char *respuesta);
+
 #endif /* PEDIDO_H_ */
