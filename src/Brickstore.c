@@ -70,9 +70,27 @@ void inicializarDB(sqlite3 *db) {
         "FOREIGN KEY(id_usuario) REFERENCES usuario(id),"
         "FOREIGN KEY(id_producto) REFERENCES producto(id));";
 
+    char *sql4 =
+        "CREATE TABLE IF NOT EXISTS pedido ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "id_usuario INTEGER,"
+        "fecha TEXT,"
+        "FOREIGN KEY(id_usuario) REFERENCES usuario(id));";
+
+    char *sql5 =
+        "CREATE TABLE IF NOT EXISTS linea_pedido ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "id_pedido INTEGER,"
+        "id_producto INTEGER,"
+        "cantidad INTEGER,"
+        "FOREIGN KEY(id_pedido) REFERENCES pedido(id),"
+        "FOREIGN KEY(id_producto) REFERENCES producto(id));";
+
     sqlite3_exec(db, sql1, 0, 0, 0);
     sqlite3_exec(db, sql2, 0, 0, 0);
     sqlite3_exec(db, sql3, 0, 0, 0);
+    sqlite3_exec(db, sql4, 0, 0, 0);
+    sqlite3_exec(db, sql5, 0, 0, 0);
 
     sqlite3_exec(db,
         "INSERT OR IGNORE INTO usuario "
@@ -104,11 +122,16 @@ void procesarComando(sqlite3 *db, char *comando, char *respuesta) {
 
         Usuario u;
 
-        if (loginUsuario(db, email, password, &u) && u.admin == 1) {
-            strcpy(respuesta, "OK;Login administrador correcto");
-            escribirLog("LOGIN OK - Administrador conectado");
+        if (loginUsuario(db, email, password, &u)) {
+            if (u.admin == 1) {
+                sprintf(respuesta, "OK;ADMIN;%d;Login administrador correcto", u.id);
+                escribirLog("LOGIN OK - Administrador conectado");
+            } else {
+                sprintf(respuesta, "OK;USER;%d;Login usuario correcto", u.id);
+                escribirLog("LOGIN OK - Usuario corriente conectado");
+            }
         } else {
-            strcpy(respuesta, "ERROR;Login incorrecto o no administrador");
+            strcpy(respuesta, "ERROR;Login incorrecto o credenciales invalidas");
             escribirLog("LOGIN ERROR - Credenciales incorrectas");
         }
     }
@@ -191,6 +214,155 @@ void procesarComando(sqlite3 *db, char *comando, char *respuesta) {
 
         registrarAdminServidor(db, u, respuesta);
         escribirLog("REG_ADMIN - Nuevo administrador registrado");
+    }
+
+    else if (strcmp(accion, "REGISTER") == 0) {
+        char *nombre = strtok(NULL, ";");
+        char *email = strtok(NULL, ";");
+        char *password = strtok(NULL, ";");
+
+        if (nombre == NULL || email == NULL || password == NULL) {
+            strcpy(respuesta, "ERROR;Formato REGISTER incorrecto");
+            return;
+        }
+
+        char sql[512];
+        sprintf(sql, "INSERT INTO usuario (nombre, email, password, admin) VALUES ('%s', '%s', '%s', 0);", nombre, email, password);
+
+        char *err_msg = 0;
+        int rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
+
+        if (rc != SQLITE_OK) {
+            sprintf(respuesta, "ERROR;No se pudo registrar: %s", err_msg);
+            sqlite3_free(err_msg);
+            escribirLog("REGISTER ERROR - Email duplicado o fallo en BD");
+        } else {
+            strcpy(respuesta, "OK;Usuario registrado correctamente");
+            escribirLog("REGISTER OK - Nuevo usuario corriente registrado");
+        }
+    }
+
+    else if (strcmp(accion, "GET_PRODUCT_DETAIL") == 0) {
+        char *id_str = strtok(NULL, ";");
+        if (id_str == NULL) {
+            strcpy(respuesta, "ERROR;Formato detalle incorrecto");
+            return;
+        }
+        int id_producto = atoi(id_str);
+
+        sqlite3_stmt *stmt;
+        char *sql = "SELECT nombre, stock, precio FROM producto WHERE id = ?;";
+
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) == SQLITE_OK) {
+            sqlite3_bind_int(stmt, 1, id_producto);
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                const unsigned char *nombre = sqlite3_column_text(stmt, 0);
+                int stock = sqlite3_column_int(stmt, 1);
+                double precio = sqlite3_column_double(stmt, 2);
+
+                sprintf(respuesta, "DATA;ID: %d | %s | Stock: %d | Precio: %.2f EUR", id_producto, nombre, stock, precio);
+                escribirLog("GET_PRODUCT_DETAIL - Detalle consultado con exito");
+            } else {
+                strcpy(respuesta, "ERROR;Producto no encontrado");
+            }
+            sqlite3_finalize(stmt);
+        } else {
+            strcpy(respuesta, "ERROR;Error de preparacion SQL");
+        }
+    }
+
+    else if (strcmp(accion, "CREATE_ORDER") == 0) {
+        char *id_usr_str = strtok(NULL, ";");
+        char *lineas_str = strtok(NULL, ";");
+
+        if (id_usr_str == NULL || lineas_str == NULL) {
+            strcpy(respuesta, "ERROR;Formato de pedido incompleto");
+            return;
+        }
+
+        int id_usuario = atoi(id_usr_str);
+
+        char sql_pedido[256];
+        time_t t = time(NULL);
+        struct tm tm = *localtime(&t);
+        char fecha[20];
+        sprintf(fecha, "%04d-%02d-%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
+
+        sprintf(sql_pedido, "INSERT INTO pedido (id_usuario, fecha) VALUES (%d, '%s');", id_usuario, fecha);
+        if (sqlite3_exec(db, sql_pedido, 0, 0, 0) != SQLITE_OK) {
+            strcpy(respuesta, "ERROR;Fallo al procesar pedido en Base de Datos");
+            return;
+        }
+
+        long long id_pedido = sqlite3_last_insert_rowid(db);
+
+        char *item = strtok(lineas_str, ",");
+        while (item != NULL) {
+            int id_prod = 0;
+            int cant = 0;
+            if (sscanf(item, "%d:%d", &id_prod, &cant) == 2) {
+                char sql_linea[256];
+                sprintf(sql_linea, "INSERT INTO linea_pedido (id_pedido, id_producto, cantidad) VALUES (%lld, %d, %d);", id_pedido, id_prod, cant);
+                sqlite3_exec(db, sql_linea, 0, 0, 0);
+
+                char sql_stock[256];
+                printf(sql_stock, "UPDATE producto SET stock = stock - %d WHERE id = %d;", cant, id_prod);
+                sqlite3_exec(db, sql_stock, 0, 0, 0);
+            }
+            item = strtok(NULL, ",");
+        }
+
+        strcpy(respuesta, "OK;Pedido guardado y stock actualizado correctamente");
+        escribirLog("CREATE_ORDER - Compra realizada con exito");
+    }
+
+    else if (strcmp(accion, "GET_ORDERS") == 0) {
+        char *id_usr_str = strtok(NULL, ";");
+        if (id_usr_str == NULL) {
+            strcpy(respuesta, "ERROR;Formato de consulta de pedidos incorrecto");
+            return;
+        }
+        int id_usuario = atoi(id_usr_str);
+
+        sqlite3_stmt *stmt;
+        char *sql = "SELECT p.id, p.fecha, lp.id_producto, prod.nombre, lp.cantidad "
+                    "FROM pedido p "
+                    "JOIN linea_pedido lp ON p.id = lp.id_pedido "
+                    "JOIN producto prod ON lp.id_producto = prod.id "
+                    "WHERE p.id_usuario = ? ORDER BY p.id DESC;";
+
+        strcpy(respuesta, "DATA;\n--- HISTORIAL DE PEDIDOS ---\n");
+
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) == SQLITE_OK) {
+            sqlite3_bind_int(stmt, 1, id_usuario);
+            int encontrado = 0;
+            int ultimo_pedido_id = -1;
+
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                encontrado = 1;
+                int id_pedido = sqlite3_column_int(stmt, 0);
+                const unsigned char *fecha = sqlite3_column_text(stmt, 1);
+                int id_prod = sqlite3_column_int(stmt, 2);
+                const unsigned char *nombre_prod = sqlite3_column_text(stmt, 3);
+                int cantidad = sqlite3_column_int(stmt, 4);
+
+                char linea[256];
+                if (id_pedido != ultimo_pedido_id) {
+                    sprintf(linea, "Pedido ID: %d | Fecha: %s\n", id_pedido, fecha);
+                    strcat(respuesta, linea);
+                    ultimo_pedido_id = id_pedido;
+                }
+                sprintf(linea, "   -> Producto: %s (ID: %d) x%d unidades\n", nombre_prod, id_prod, cantidad);
+                strcat(respuesta, linea);
+            }
+            if (!encontrado) {
+                strcpy(respuesta, "DATA;No constan pedidos para este usuario.");
+            }
+            sqlite3_finalize(stmt);
+            escribirLog("GET_ORDERS - Historial de usuario consultado");
+        } else {
+            strcpy(respuesta, "ERROR;Error al leer historial de la base de datos");
+        }
     }
 
     else if (strcmp(accion, "SALIR") == 0) {
