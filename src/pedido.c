@@ -7,9 +7,12 @@
 void registrarPedidoBD(sqlite3 *db, Pedido *p, char *respuesta) {
     char sql_pedido[256];
 
+    sqlite3_exec(db, "BEGIN TRANSACTION;", 0, 0, 0);
+
     sprintf(sql_pedido, "INSERT INTO pedido (id_usuario, fecha) VALUES (%d, '%s');", p->id_usuario, p->fecha);
 
     if (sqlite3_exec(db, sql_pedido, 0, 0, 0) != SQLITE_OK) {
+    	sqlite3_exec(db, "ROLLBACK;", 0, 0, 0);
         strcpy(respuesta, "ERROR;Fallo al procesar pedido en Base de Datos");
         return;
     }
@@ -20,18 +23,25 @@ void registrarPedidoBD(sqlite3 *db, Pedido *p, char *respuesta) {
 
     while (actual != NULL) {
         char sql_linea[256];
-        sprintf(sql_linea, "INSERT INTO linea_pedido (id_pedido, id_producto, cantidad) VALUES (%lld, %d, %d);",
-                id_pedido, actual->id_producto, actual->cantidad);
-        sqlite3_exec(db, sql_linea, 0, 0, 0);
+        sprintf(sql_linea, "INSERT INTO linea_pedido (id_pedido, id_producto, cantidad) VALUES (%lld, %d, %d);", id_pedido, actual->id_producto, actual->cantidad);
+        if (sqlite3_exec(db, sql_linea, 0, 0, 0) != SQLITE_OK) {
+            sqlite3_exec(db, "ROLLBACK;", 0, 0, 0);
+            strcpy(respuesta, "ERROR;Fallo al insertar linea de pedido");
+            return;
+        }
 
         char sql_stock[256];
-        sprintf(sql_stock, "UPDATE producto SET stock = stock - %d WHERE id = %d;",
-                actual->cantidad, actual->id_producto);
-        sqlite3_exec(db, sql_stock, 0, 0, 0);
+        sprintf(sql_stock, "UPDATE producto SET stock = stock - %d WHERE id = %d;", actual->cantidad, actual->id_producto);
+
+        if (sqlite3_exec(db, sql_stock, 0, 0, 0) != SQLITE_OK) {
+        	sqlite3_exec(db, "ROLLBACK;", 0, 0, 0);
+            strcpy(respuesta, "ERROR;Stock insuficiente para uno de los productos");
+             return;
+        }
 
         actual = actual->siguiente;
     }
-
+    sqlite3_exec(db, "COMMIT;", 0, 0, 0);
     strcpy(respuesta, "OK;Pedido guardado y stock actualizado correctamente");
 }
 
@@ -41,6 +51,7 @@ void liberarPedido(Pedido *p) {
     LineaPedido *actual = p->lineas;
     while (actual != NULL) {
         LineaPedido *siguiente = actual->siguiente;
+        free(actual);
         actual = siguiente;
     }
     free(p);

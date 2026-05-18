@@ -50,7 +50,7 @@ void inicializarDB(sqlite3 *db) {
         "CREATE TABLE IF NOT EXISTS producto ("
         "id INTEGER PRIMARY KEY,"
         "nombre TEXT,"
-        "stock INTEGER,"
+        "stock INTEGER CHECK(stock >= 0),"
         "precio REAL);";
 
     char *sql2 =
@@ -66,7 +66,7 @@ void inicializarDB(sqlite3 *db) {
         "id INTEGER PRIMARY KEY,"
         "id_usuario INTEGER,"
         "id_producto INTEGER,"
-        "puntuacion INTEGER,"
+        "puntuacion INTEGER CHECK(puntuacion >= 1 AND puntuacion <= 5),"
         "comentario TEXT,"
         "FOREIGN KEY(id_usuario) REFERENCES usuario(id),"
         "FOREIGN KEY(id_producto) REFERENCES producto(id));";
@@ -160,6 +160,11 @@ void procesarComando(sqlite3 *db, char *comando, char *respuesta) {
         p.stock = atoi(stock);
         p.precio = atof(precio);
 
+        if (p.stock < 0) {
+            strcpy(respuesta, "ERROR;El stock no puede ser negativo");
+            return;
+        }
+
         insertarProductoServidor(db, p, respuesta);
         escribirLog("ADD - Producto insertado");
     }
@@ -171,6 +176,11 @@ void procesarComando(sqlite3 *db, char *comando, char *respuesta) {
 
         if (id == NULL || stock == NULL || precio == NULL) {
             strcpy(respuesta, "ERROR;Formato UPDATE incorrecto");
+            return;
+        }
+
+        if (atoi(stock) < 0) {
+            strcpy(respuesta, "ERROR;El stock no puede ser negativo");
             return;
         }
 
@@ -209,6 +219,11 @@ void procesarComando(sqlite3 *db, char *comando, char *respuesta) {
         int id_usuario = atoi(id_usr_str);
         int id_producto = atoi(id_prod_str);
         int puntuacion = atoi(puntuacion_str);
+
+        if (puntuacion < 1 || puntuacion > 5) {
+            strcpy(respuesta, "ERROR;La puntuacion de la valoracion debe estar entre 1 y 5");
+            return;
+        }
 
         char sql[512];
         sprintf(sql, "INSERT INTO valoracion (id_usuario, id_producto, puntuacion, comentario) VALUES (%d, %d, %d, '%s');", id_usuario, id_producto, puntuacion, comentario);
