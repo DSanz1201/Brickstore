@@ -16,14 +16,13 @@ void registrarPedidoBD(sqlite3 *db, Pedido *p, char *respuesta) {
         strcpy(respuesta, "ERROR;Fallo al procesar pedido en Base de Datos");
         return;
     }
-
-    long long id_pedido = sqlite3_last_insert_rowid(db);
-
     LineaPedido *actual = p->lineas;
 
     while (actual != NULL) {
         char sql_linea[256];
-        sprintf(sql_linea, "INSERT INTO linea_pedido (id_pedido, id_producto, cantidad) VALUES (%lld, %d, %d);", id_pedido, actual->id_producto, actual->cantidad);
+        sqlite3_int64 id_pedido = sqlite3_last_insert_rowid(db);
+
+        sprintf(sql_linea,"INSERT INTO linea_pedido (id_pedido, id_producto, cantidad) VALUES (%I64d, %d, %d);",  id_pedido, actual->id_producto,actual->cantidad);
         if (sqlite3_exec(db, sql_linea, 0, 0, 0) != SQLITE_OK) {
             sqlite3_exec(db, "ROLLBACK;", 0, 0, 0);
             strcpy(respuesta, "ERROR;Fallo al insertar linea de pedido");
