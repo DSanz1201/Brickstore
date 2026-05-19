@@ -315,7 +315,52 @@ void procesarComando(sqlite3 *db, char *comando, char *respuesta) {
             strcpy(respuesta, "ERROR;Error de preparacion SQL");
         }
     }
+    else if (strcmp(accion, "CHECK_STOCK") == 0) {
+        char *id_str = strtok(NULL, ";");
+        char *cant_str = strtok(NULL, ";");
 
+        if (id_str == NULL || cant_str == NULL) {
+            strcpy(respuesta, "ERROR;Formato CHECK_STOCK incorrecto");
+            return;
+        }
+
+        int id_producto = atoi(id_str);
+        int cantidad = atoi(cant_str);
+
+        if (cantidad <= 0) {
+            strcpy(respuesta, "ERROR;La cantidad debe ser mayor que 0");
+            return;
+        }
+
+        sqlite3_stmt *stmt;
+        char *sql = "SELECT stock FROM producto WHERE id = ?;";
+
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) != SQLITE_OK) {
+            strcpy(respuesta, "ERROR;Error preparando consulta de stock");
+            return;
+        }
+
+        sqlite3_bind_int(stmt, 1, id_producto);
+
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            int stock = sqlite3_column_int(stmt, 0);
+
+            if (stock >= cantidad) {
+                strcpy(respuesta, "OK;Producto disponible");
+                escribirLog("CHECK_STOCK OK - Producto disponible");
+            } else {
+                sprintf(respuesta,
+                        "ERROR;Stock insuficiente. Stock disponible: %d",
+                        stock);
+                escribirLog("CHECK_STOCK ERROR - Stock insuficiente");
+            }
+        } else {
+            strcpy(respuesta, "ERROR;No existe ningun producto con ese ID");
+            escribirLog("CHECK_STOCK ERROR - Producto inexistente");
+        }
+
+        sqlite3_finalize(stmt);
+    }
     else if (strcmp(accion, "CREATE_ORDER") == 0) {
             char *id_usr_str = strtok(NULL, ";");
             char *lineas_str = strtok(NULL, ";");
