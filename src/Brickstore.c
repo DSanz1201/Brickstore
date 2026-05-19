@@ -433,7 +433,7 @@ void procesarComando(sqlite3 *db, char *comando, char *respuesta) {
 int main() {
     setbuf(stdout, NULL);
 
-    printf("Iniciando servidor\n");
+ //   printf("Iniciando servidor\n");
 
     WSADATA wsa;
     SOCKET servidor;
@@ -517,7 +517,7 @@ int main() {
         return 1;
     }
 
-    printf("Cliente conectado.\n");
+    //printf("Cliente conectado.\n");
     escribirLog("Cliente conectado");
 
     while (1) {
@@ -534,13 +534,13 @@ int main() {
 
         buffer[bytes] = '\0';
 
-        printf("Comando recibido: %s\n", buffer);
+    //    printf("Comando recibido: %s\n", buffer);
 
         procesarComando(db, buffer, respuesta);
 
         send(cliente, respuesta, strlen(respuesta), 0);
 
-        printf("Respuesta enviada: %s\n", respuesta);
+   //     printf("Respuesta enviada: %s\n", respuesta);
 
         if (strncmp(buffer, "SALIR", 5) == 0) {
             break;
@@ -556,7 +556,7 @@ int main() {
 
     escribirLog("Servidor cerrado");
 
-    printf("Servidor cerrado.\n");
+  //  printf("Servidor cerrado.\n");
 
     return 0;
 }
