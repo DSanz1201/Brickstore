@@ -55,7 +55,7 @@ void inicializarDB(sqlite3 *db) {
 
     char *sql2 =
         "CREATE TABLE IF NOT EXISTS usuario ("
-        "id INTEGER PRIMARY KEY,"
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
         "nombre TEXT,"
         "email TEXT UNIQUE,"
         "password TEXT,"

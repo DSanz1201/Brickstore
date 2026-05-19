@@ -102,7 +102,30 @@ void registrarAdmin(sqlite3 *db) {
 }
 
 void registrarAdminServidor(sqlite3 *db, Usuario u, char *respuesta) {
-    u.admin = 1;
-    insertarUsuario(db, u);
-    strcpy(respuesta, "OK;Administrador registrado correctamente");
+    sqlite3_stmt *stmt;
+
+    char *sql =
+        "INSERT INTO usuario (nombre, email, password, admin) "
+        "VALUES (?, ?, ?, 1);";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        sprintf(respuesta,
+                "ERROR;No se pudo preparar registro admin: %s",
+                sqlite3_errmsg(db));
+        return;
+    }
+
+    sqlite3_bind_text(stmt, 1, u.nombre, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, u.email, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 3, u.password, -1, SQLITE_TRANSIENT);
+
+    if (sqlite3_step(stmt) == SQLITE_DONE) {
+        strcpy(respuesta, "OK;Administrador registrado correctamente");
+    } else {
+        sprintf(respuesta,
+                "ERROR;No se pudo registrar admin: %s",
+                sqlite3_errmsg(db));
+    }
+
+    sqlite3_finalize(stmt);
 }
